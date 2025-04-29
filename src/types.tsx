@@ -21,14 +21,18 @@ export type BaseBlockType = {
   rotation: number;
 };
 
+export type BlendTypes = "normal" | "multiply" | "screen" | "overlay" | "darken" | "lighten";
+
 export type ImageBlockType = BaseBlockType & {
   type: "image";
   src: string;
+  blend: BlendTypes;
 };
 
 export type WebcamBlockType = BaseBlockType & {
   type: "webcam";
   crop: CropBoxType;
+  blend: BlendTypes;
 };
 
 export type BlockType = ImageBlockType | WebcamBlockType;
@@ -53,13 +57,21 @@ export type CameraSettingsType = {
 };
 
 export type CropBoxType = {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 } | null;
 
 export type SizeType = {
   width: number;
   height: number;
 }
+
+export type BoxType = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+

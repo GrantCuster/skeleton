@@ -24,7 +24,7 @@ export function WebcamBlockUI({
 
   return (
     <>
-      {isSelected ? (
+      {isSelected && false ? (
         <div
           className="absolute left-1/2 -bottom-8 border-2 rounded-2xl border-blue-500 pointer-events-auto bg-black cursor-pointer"
           style={{

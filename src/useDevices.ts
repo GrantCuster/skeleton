@@ -7,16 +7,23 @@ const preferredDeviceStorageName = "preferredDeviceLabel";
 
 export function useDevices() {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
+  const [selectedDeviceIndex, _setSelectedDeviceIndex] = useState(0);
   const [cameraSettings, setCameraSettings] = useAtom(cameraSettingsAtom);
   const currentSettings = {
     ...defaultCameraSettings,
     ...cameraSettings[devices[selectedDeviceIndex]?.label],
   };
-  const [stream, setStream] = useAtom(mediaStreamAtom)
+  const [stream, setStream] = useAtom(mediaStreamAtom);
 
   const selectedDeviceId = devices[selectedDeviceIndex]?.deviceId;
   const selectedDeviceLabel = devices[selectedDeviceIndex]?.label;
+
+  function setSelectedDeviceIndex(index: number) {
+    _setSelectedDeviceIndex(index);
+    if (devices[index]) {
+      localStorage.setItem(preferredDeviceStorageName, devices[index].label);
+    }
+  }
 
   const streamRef = useRef<MediaStream | null>(null);
   streamRef.current = stream;
@@ -58,7 +65,7 @@ export function useDevices() {
   useEffect(() => {
     const getCameras = async () => {
       try {
-       // Trigger the browser to ask for permission to use the camera
+        // Trigger the browser to ask for permission to use the camera
         await navigator.mediaDevices.getUserMedia({
           video: {
             width: { ideal: idealResolution.width },

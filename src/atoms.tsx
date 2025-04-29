@@ -63,3 +63,7 @@ export const videoCanvasRefAtom = atom<{ current: HTMLCanvasElement }>({
 });
 
 export const isDraggingAtom = atom(false);
+
+export const showCameraBlockAtom = atom(true);
+
+export const showCropModalAtom = atom<string | null>(null);

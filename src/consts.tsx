@@ -13,3 +13,11 @@ export const idealResolution = {
   width: 3840,
   height: 2160
 }
+
+export const blendOptions = [
+  "darken",
+  "lighten",
+  "multiply",
+  "screen",
+  "normal",
+];

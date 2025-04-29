@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BlockType, PointType } from "./types";
+import { BlockType, BoxType, PointType } from "./types";
 
 // load image as promise
 export function loadImage(src: string): Promise<HTMLImageElement> {
@@ -24,6 +24,15 @@ export function pointIntersectBlocks({ x, y }: PointType, blocks: BlockType[]) {
       y <= block.y + block.height
     );
   });
+}
+
+export function pointIntersectBox({ x, y }: PointType, box: BoxType) {
+  return (
+    x >= box.x &&
+    x <= box.x + box.width &&
+    y >= box.y &&
+    y <= box.y + box.height
+  );
 }
 
 // TODO make this work

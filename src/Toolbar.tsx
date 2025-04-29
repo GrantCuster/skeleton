@@ -1,12 +1,25 @@
 import { useAtom } from "jotai";
-import { useEffect } from "react";
-import { ModeAtom } from "./atoms";
+import { useEffect, useMemo } from "react";
+import {
+  BlockIdsAtom,
+  BlockMapAtom,
+  ModeAtom,
+  SelectedBlockIdsAtom,
+  showCameraBlockAtom,
+} from "./atoms";
 import { useDevices } from "./useDevices";
-import { useStream } from './useStream';
+import { useStream } from "./useStream";
 import { FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import { v4 as uuid } from "uuid";
+import { makeZIndex } from "./utils";
+import { BlendTypes, ImageBlockType } from "./types";
+import { blendOptions } from "./consts";
 
 export function Toolbar() {
   const [mode, setMode] = useAtom(ModeAtom);
+  const [blockIds, setBlockIds] = useAtom(BlockIdsAtom);
+  const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
+  const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
   const {
     devices,
     selectedDeviceIndex,
@@ -16,10 +29,11 @@ export function Toolbar() {
     setCameraSettings,
   } = useDevices();
   useStream();
+  const [showCameraBlock, setShowCameraBlock] = useAtom(showCameraBlockAtom);
 
   useEffect(() => {
-    function handleModifierDown(event: KeyboardEvent) { }
-    function handleModifierUp(event: KeyboardEvent) { }
+    function handleModifierDown(event: KeyboardEvent) {}
+    function handleModifierUp(event: KeyboardEvent) {}
     window.addEventListener("keydown", handleModifierDown);
     window.addEventListener("keyup", handleModifierUp);
     return () => {
@@ -28,11 +42,34 @@ export function Toolbar() {
     };
   }, [mode, setMode]);
 
+  const cameraBlockId = useMemo(() => {
+    return blockIds.find((id: string) => {
+      const block = blockMap[id];
+      return block.type === "webcam" ? block : null;
+    });
+  }, [blockIds, blockMap]);
+
+  const cameraBlockSelected = useMemo(() => {
+    return selectedBlockIds.some((id) => {
+      const block = blockMap[id];
+      return block.type === "webcam" ? block : null;
+    });
+  }, [selectedBlockIds, blockMap]);
+
   return (
     <>
-      <div className="w-full">
-        <div className="flex">
-          <div className="grow">
+      <div className="absolute left-0 bottom-0 w-full flex justify-end flex-wrap">
+        <label className="px-3 py-2 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex gap-2 justify-center items-center select-none">
+          <input
+            className="-top-px"
+            type="checkbox"
+            checked={showCameraBlock}
+            onChange={() => setShowCameraBlock(!showCameraBlock)}
+          />
+          <div>Show camera</div>
+        </label>
+        {cameraBlockSelected ? (
+          <>
             {devices.length > 0 ? (
               devices.length > 1 ? (
                 <select
@@ -58,8 +95,30 @@ export function Toolbar() {
                 </div>
               )
             ) : null}
-          </div>
-          <div className="flex">
+            <select
+              value={blockMap[cameraBlockId!].blend}
+              onChange={(e) =>
+                setBlockMap((prev) => ({
+                  ...prev,
+                  [cameraBlockId!]: {
+                    ...prev[cameraBlockId!],
+                    blend: e.target.value as BlendTypes,
+                  },
+                }))
+              }
+              className="px-3 pointer-events-auto py-2 bg-neutral-800 focus:outline-none"
+            >
+              {blendOptions.map((item) => (
+                <option
+                  value={item}
+                  key={item}
+                  className="px-3 py-2 bg-neutral-800"
+                >
+                  {item}
+                </option>
+              ))}
+            </select>
+
             <button
               className="px-3 py-2 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
               onClick={() => {
@@ -92,8 +151,46 @@ export function Toolbar() {
             >
               <FlipVertical2 size={14} />
             </button>
-          </div>
-        </div>
+            <button
+              className="px-3 py-2 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!cameraBlockId) return;
+                const block = blockMap[cameraBlockId];
+                const canvas = document.getElementById(
+                  "canvas-" + block.id,
+                ) as HTMLCanvasElement;
+                const dataUrl = canvas.toDataURL();
+                const newId = uuid();
+                const newBlock = {
+                  id: newId,
+                  x: block.x,
+                  y: block.y,
+                  width: block.width,
+                  height: block.height,
+                  rotation: block.rotation,
+                  src: dataUrl,
+                  blend: block.blend,
+                  type: "image",
+                  zIndex: makeZIndex(),
+                } as ImageBlockType;
+                setBlockIds((prev) => [...prev, newId]);
+                setBlockMap((prev) => ({
+                  ...prev,
+                  [newId]: newBlock,
+                  [block.id]: {
+                    ...block,
+                    x: block.x + 12,
+                    y: block.y + 12,
+                    zIndex: makeZIndex() + 1,
+                  },
+                }));
+              }}
+            >
+              Stamp
+            </button>
+          </>
+        ) : null}
       </div>
     </>
   );
