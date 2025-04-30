@@ -55,6 +55,8 @@ export function Toolbar() {
       return block.type === "webcam" ? block : null;
     });
   }, [selectedBlockIds, blockMap]);
+  const selectedBlock =
+    selectedBlockIds.length === 1 ? blockMap[selectedBlockIds[0]] : null;
 
   return (
     <>
@@ -66,8 +68,17 @@ export function Toolbar() {
             checked={showCameraBlock}
             onChange={() => setShowCameraBlock(!showCameraBlock)}
           />
-          <div>Show camera</div>
+          <div>show camera</div>
         </label>
+        {selectedBlockIds.length > 0 ? (
+          <div className="px-3 py-2">{`${selectedBlockIds.length} selected`}</div>
+        ) : null}
+        {selectedBlock ? (
+          <div className="px-3 py-2">
+            {Math.round(selectedBlock.x)}, {Math.round(selectedBlock.y)}{" "}
+            {Math.round(selectedBlock.width)}x{Math.round(selectedBlock.height)}
+          </div>
+        ) : null}
         {cameraBlockSelected ? (
           <>
             {devices.length > 0 ? (
@@ -89,11 +100,7 @@ export function Toolbar() {
                     </option>
                   ))}
                 </select>
-              ) : (
-                <div className="px-3 py-2">
-                  {devices[0].label || `Camera ${devices[0].deviceId}`}
-                </div>
-              )
+              ) : null
             ) : null}
             <select
               value={blockMap[cameraBlockId!].blend}
