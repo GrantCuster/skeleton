@@ -66,4 +66,5 @@ export const isDraggingAtom = atom(false);
 
 export const showCameraBlockAtom = atom(true);
 
-export const showCropModalAtom = atom<string | null>(null);
+// maybe expand to images later
+export const showCropModalAtom = atom<boolean>(false);

@@ -20,4 +20,5 @@ export const blendOptions = [
   "multiply",
   "screen",
   "normal",
+  "difference",
 ];

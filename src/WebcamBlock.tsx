@@ -82,17 +82,19 @@ export function WebcamBlockRender({
 
   useEffect(() => {
     if (canvasRef.current) {
-      canvasRef.current.width = videoSize.width;
-      canvasRef.current.height = videoSize.height;
+      const targetWidth = block.crop ? block.crop.width : videoSize.width;
+      const targetHeight = block.crop ? block.crop.height : videoSize.height;
+      canvasRef.current.width = targetWidth;
+      canvasRef.current.height = targetHeight;
       // set block size to match aspect ratio
-      const videoAspectRatio = videoSize.width / videoSize.height;
+      const targetAspectRatio = targetWidth / targetHeight;
       const blockAspectRatio = block.width / block.height;
-      if (blockAspectRatio > videoAspectRatio) {
+      if (blockAspectRatio > targetAspectRatio) {
         setBlockMap((prev) => ({
           ...prev,
           [block.id]: {
             ...block,
-            width: block.height * videoAspectRatio,
+            width: block.height * targetAspectRatio,
           },
         }));
       } else {
@@ -100,7 +102,7 @@ export function WebcamBlockRender({
           ...prev,
           [block.id]: {
             ...block,
-            height: block.width / videoAspectRatio,
+            height: block.width / targetAspectRatio,
           },
         }));
       }
@@ -111,7 +113,21 @@ export function WebcamBlockRender({
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d")!;
       function draw() {
-        ctx.drawImage(videoCanvasRef.current, 0, 0);
+        if (block.crop) {
+          ctx.drawImage(
+            videoCanvasRef.current,
+            block.crop.x,
+            block.crop.y,
+            block.crop.width,
+            block.crop.height,
+            0,
+            0,
+            block.crop.width,
+            block.crop.height,
+          );
+        } else {
+          ctx.drawImage(videoCanvasRef.current, 0, 0);
+        }
         animationFrame.current = window.requestAnimationFrame(draw);
       }
       animationFrame.current = window.requestAnimationFrame(draw);
@@ -121,7 +137,7 @@ export function WebcamBlockRender({
         window.cancelAnimationFrame(animationFrame.current);
       }
     };
-  }, [canvasRef]);
+  }, [canvasRef, videoSize, block.crop]);
 
   return (
     <div className="absolute pointer-events-none inset-0" draggable={false}>
