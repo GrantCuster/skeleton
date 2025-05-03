@@ -1,16 +1,25 @@
 import { useDrag } from "@use-gesture/react";
 import { useAtom } from "jotai";
 import { useRef } from "react";
-import { BlockMapAtom, CameraAtom, ZoomContainerAtom } from "./atoms";
+import {
+  BlockMapAtom,
+  SelectedBlockIdsAtom,
+  CameraAtom,
+  ZoomContainerAtom,
+} from "./atoms";
 import { screenToCanvas } from "./Camera";
 import { rotateAroundCenter } from "./utils";
 
-const corners = ["top-left", "top-right", "bottom-left", "bottom-right"];
-
-export function BlockResizers({ id }: { id: string }) {
+export function SingleBlockResizer() {
+  const corners = [
+    "top-left",
+    "top-right",
+    "bottom-left",
+    "bottom-right",
+  ] as const;
   const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
-  const block = blockMap[id];
-
+  const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const block = blockMap[selectedBlockIds[0]];
   const [camera] = useAtom(CameraAtom);
   const cameraRef = useRef(camera);
   cameraRef.current = camera;
@@ -21,7 +30,7 @@ export function BlockResizers({ id }: { id: string }) {
   // reimplement?
   const preserveAspectRatio = block.type === "image" || block.type === "webcam";
 
-  const size = 22;
+  const size = 16;
 
   const dragBind = useDrag(({ event, xy: [x, y] }) => {
     event.stopPropagation();
@@ -89,15 +98,15 @@ export function BlockResizers({ id }: { id: string }) {
       let proposedWidth = unrotatedActiveCorner[0] - unrotatedTopLeft[0];
       let proposedHeight = unrotatedActiveCorner[1] - unrotatedTopLeft[1];
 
-      if (preserveAspectRatio) {
-        const aspectRatio = block.width / block.height;
-        const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
-        if (newAspectRatio < aspectRatio) {
-          proposedHeight = proposedWidth / aspectRatio;
-        } else {
-          proposedWidth = proposedHeight * aspectRatio;
-        }
-      }
+      // if (preserveAspectRatio) {
+      //   const aspectRatio = block.width / block.height;
+      //   const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
+      //   if (newAspectRatio < aspectRatio) {
+      //     proposedWidth = proposedHeight * aspectRatio;
+      //   } else {
+      //     proposedHeight = proposedWidth / aspectRatio;
+      //   }
+      // }
 
       const newCenterX = unrotatedTopLeft[0] + proposedWidth / 2;
       const newCenterY = unrotatedTopLeft[1] + proposedHeight / 2;
@@ -120,8 +129,8 @@ export function BlockResizers({ id }: { id: string }) {
 
       setBlockMap((prev) => ({
         ...prev,
-        [id]: {
-          ...prev[id],
+        [block.id]: {
+          ...prev[block.id],
           x: newX,
           y: newY,
           width: newWidth,
@@ -172,8 +181,8 @@ export function BlockResizers({ id }: { id: string }) {
 
       setBlockMap((prev) => ({
         ...prev,
-        [id]: {
-          ...prev[id],
+        [block.id]: {
+          ...prev[block.id],
           x: newX,
           y: newY,
           width: newWidth,
@@ -224,8 +233,8 @@ export function BlockResizers({ id }: { id: string }) {
 
       setBlockMap((prev) => ({
         ...prev,
-        [id]: {
-          ...prev[id],
+        [block.id]: {
+          ...prev[block.id],
           x: newX,
           y: newY,
           width: newWidth,
@@ -276,8 +285,8 @@ export function BlockResizers({ id }: { id: string }) {
 
       setBlockMap((prev) => ({
         ...prev,
-        [id]: {
-          ...prev[id],
+        [block.id]: {
+          ...prev[block.id],
           x: newX,
           y: newY,
           width: newWidth,
@@ -287,26 +296,36 @@ export function BlockResizers({ id }: { id: string }) {
     }
   });
 
+  const cornerCursors = {
+    "top-right": "nesw-resize",
+    "top-left": "nwse-resize",
+    "bottom-right": "nwse-resize",
+    "bottom-left": "nesw-resize",
+  };
+
+  const scaledSize = size / camera.z;
+
   return (
     <>
       {[...corners].map((corner) => {
         return (
           <div
             {...dragBind()}
+            key={corner}
             data-corner={corner}
-            className="absolute touch-none pointer-events-auto border-2 border-blue-500 bg-black"
+            className="absolute touch-none pointer-events-auto"
             style={{
               left:
                 corner === "top-left" || corner === "bottom-left"
-                  ? -size / 2
-                  : block.width - size / 2,
+                  ? -scaledSize / 2
+                  : block.width - scaledSize / 2,
               top:
                 corner === "top-left" || corner === "top-right"
-                  ? -size / 2
-                  : block.height - size / 2,
-              cursor: "grab",
-              width: size,
-              height: size,
+                  ? -scaledSize / 2
+                  : block.height - scaledSize / 2,
+              cursor: cornerCursors[corner],
+              width: scaledSize,
+              height: scaledSize,
             }}
           />
         );

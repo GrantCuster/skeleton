@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { BlockIdsAtom, BlockMapAtom, BlockSelectorAtom, CameraAtom, ModeAtom, SelectedBlockIdsAtom, StateRefAtom, ZoomContainerAtom } from "./atoms";
+import { BlockIdsAtom, BlockMapAtom, CameraAtom, ModeAtom, SelectedBlockIdsAtom, StateRefAtom, ZoomContainerAtom } from "./atoms";
 import { useEffect } from "react";
 
 export function RefUpdater() {
@@ -10,7 +10,6 @@ export function RefUpdater() {
   const [mode] = useAtom(ModeAtom);
   const [zoomContainer] = useAtom(ZoomContainerAtom);
   const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
-  const [blockSelector] = useAtom(BlockSelectorAtom);
 
   // If you add a new entry make sure you add it to the dependency array
   useEffect(() => {
@@ -20,7 +19,7 @@ export function RefUpdater() {
     stateRef.mode = mode;
     stateRef.zoomContainer = zoomContainer;
     stateRef.selectedBlockIds = selectedBlockIds;
-  }, [camera, blockIds, blockMap, mode, zoomContainer, selectedBlockIds, blockSelector]);
+  }, [camera, blockIds, blockMap, mode, zoomContainer, selectedBlockIds]);
 
   return null
 }

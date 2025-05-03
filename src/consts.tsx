@@ -22,3 +22,10 @@ export const blendOptions = [
   "normal",
   "difference",
 ];
+
+export const offsetLookup = {
+  "1/4": 0.25,
+  "1/2": 0.5,
+  "3/4": 0.75,
+  "1": 1,
+}

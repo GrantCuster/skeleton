@@ -1,13 +1,15 @@
 import { useAtom } from "jotai";
 import { useEffect } from "react";
-import { BlockSelectorAtom, CameraAtom, ZoomContainerAtom } from "./atoms";
-import { Blocks } from "./Blocks";
 import {
-  useHandleDropImage,
-  useHandlePasteImage,
-} from "./hooks";
+  BlockSelectorCreatorAtom,
+  CameraAtom,
+  ZoomContainerAtom,
+} from "./atoms";
+import { Blocks } from "./Blocks";
+import { useHandleDropImage, useHandlePasteImage } from "./hooks";
 import { panCamera, zoomCamera } from "./Camera";
 import { useDragAndSelect } from "./useDragAndSelect";
+import { BlockSelected } from "./BlockSelected";
 
 export function Zoom() {
   const [camera, setCamera] = useAtom(CameraAtom);
@@ -62,25 +64,31 @@ export function Zoom() {
       >
         <div className="relative pointer-events-none">
           <Blocks />
-          <BlockSelector />
+          <BlockSelectorCreator />
+          <BlockSelected />
         </div>
       </div>
     </div>
   );
 }
 
-function BlockSelector() {
-  const [blockSelector] = useAtom(BlockSelectorAtom);
+function BlockSelectorCreator() {
+ const [camera] = useAtom(CameraAtom);
+  const [blockSelectorCreator] = useAtom(BlockSelectorCreatorAtom);
 
-  return blockSelector ? (
+
+  return blockSelectorCreator ? (
     <div
       className="absolute pointer-events-none border-[2px] border-blue-500"
       style={{
-        left: blockSelector.x,
-        top: blockSelector.y,
-        width: blockSelector.width,
-        height: blockSelector.height,
+        left: blockSelectorCreator.x,
+        top: blockSelectorCreator.y,
+        width: blockSelectorCreator.width,
+        height: blockSelectorCreator.height,
+        borderWidth: Math.max(2, 2 / camera.z),
       }}
     />
   ) : null;
 }
+
+

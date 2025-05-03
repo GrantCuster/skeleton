@@ -75,3 +75,15 @@ export type BoxType = {
   height: number;
 };
 
+export type BlockSelectorType = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  length: number;
+};
+
+export type StampMoveDirectionType = "←" | "↖" | "↑" | "↗" | "•" | "→" | "↘" | "↓" | "↙";
+
+export type StampMoveOffsetType = "1/4" | "1/2" | "3/4" | "1";

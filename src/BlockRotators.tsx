@@ -25,7 +25,6 @@ export function BlockRotators({ id }: { id: string }) {
     event.stopPropagation();
 
     // resizing rotation from https://shihn.ca/posts/2020/resizing-rotated-elements/
-
     const centerX = block.x + block.width / 2;
     const centerY = block.y + block.height / 2;
     const canvasPoint = screenToCanvas(
@@ -61,7 +60,7 @@ export function BlockRotators({ id }: { id: string }) {
     <>
       <div
         {...dragBind()}
-        className="absolute touch-none pointer-events-auto border-blue-500 border-2 rounded-full bg-black"
+        className="absolute opacity-0 touch-none pointer-events-auto border-blue-500 border-2 rounded-full bg-black"
         style={{
           left: `calc(50% - ${size / 2}px)`,
           top: -size / 2 - 24,

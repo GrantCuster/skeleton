@@ -26,6 +26,7 @@ export function Keyboard() {
         });
         return newMap;
       });
+      setSelectedBlockIds([]);
     }
   }
 

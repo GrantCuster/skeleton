@@ -7,7 +7,7 @@ import { rotateAroundCenter } from "./utils";
 
 const corners = ["top-left", "top-right", "bottom-left", "bottom-right"];
 
-export function BlockResizers({ id }: { id: string }) {
+export function BoxResizer({ id }: { id: string }) {
   const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
   const block = blockMap[id];
 
@@ -294,7 +294,7 @@ export function BlockResizers({ id }: { id: string }) {
           <div
             {...dragBind()}
             data-corner={corner}
-            className="absolute touch-none pointer-events-auto border-2 border-blue-500 bg-black"
+            className="absolute touch-none pointer-events-auto"
             style={{
               left:
                 corner === "top-left" || corner === "bottom-left"
@@ -304,7 +304,6 @@ export function BlockResizers({ id }: { id: string }) {
                 corner === "top-left" || corner === "top-right"
                   ? -size / 2
                   : block.height - size / 2,
-              cursor: "grab",
               width: size,
               height: size,
             }}

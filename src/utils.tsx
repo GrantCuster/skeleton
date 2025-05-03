@@ -35,6 +35,25 @@ export function pointIntersectBox({ x, y }: PointType, box: BoxType) {
   );
 }
 
+export function pointIntersectsRotatedBlock({
+  x,
+  y,
+}: PointType, block: BlockType) {
+  const cx = block.x + block.width / 2;
+  const cy = block.y + block.height / 2;
+  const angle = -block.rotation;
+
+  // rotate point around center of block
+  const rotatedPoint = rotateAroundCenter(x, y, cx, cy, angle);
+
+  return (
+    rotatedPoint[0] >= block.x &&
+    rotatedPoint[0] <= block.x + block.width &&
+    rotatedPoint[1] >= block.y &&
+    rotatedPoint[1] <= block.y + block.height
+  );
+}
+
 // TODO make this work
 export function blockIntersectBlocks(
   { x, y, width, height }: BlockType,
@@ -77,3 +96,18 @@ export function useImageHandler(src: string) {
 
   return resolvedSrc;
 }
+
+export function rotateAroundCenter(
+  x: number,
+  y: number,
+  cx: number,
+  cy: number,
+  angle: number,
+) {
+  return [
+    (x - cx) * Math.cos(angle) - (y - cy) * Math.sin(angle) + cx,
+    (x - cx) * Math.sin(angle) + (y - cy) * Math.cos(angle) + cy,
+  ];
+}
+
+

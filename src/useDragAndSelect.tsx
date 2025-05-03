@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import {
   BlockIdsAtom,
   BlockMapAtom,
-  BlockSelectorAtom,
+  BlockSelectorCreatorAtom,
   isDraggingAtom,
   SelectedBlockIdsAtom,
   StateRefAtom,
@@ -19,7 +19,7 @@ import { BlockType, PointType } from "./types";
 import { v4 as uuid } from "uuid";
 
 export function useDragAndSelect() {
-  const [, setBlockSelector] = useAtom(BlockSelectorAtom);
+  const [, setBlockSelector] = useAtom(BlockSelectorCreatorAtom);
   const [stateRef] = useAtom(StateRefAtom);
   const [, setSelectedBlockIds] = useAtom(SelectedBlockIdsAtom);
   const [, setBlockMap] = useAtom(BlockMapAtom);
@@ -158,7 +158,7 @@ export function useDragAndSelect() {
             stateRef.blockSelector = null;
             setBlockSelector(null);
             setIsDragging(false);
-          }
+         }
         }
         break;
       }

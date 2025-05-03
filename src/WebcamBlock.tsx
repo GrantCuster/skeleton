@@ -2,69 +2,23 @@ import { useEffect, useRef } from "react";
 import { ImageBlockType, WebcamBlockType } from "./types";
 import { useAtom } from "jotai";
 import {
-  BlockIdsAtom,
   BlockMapAtom,
+  CameraAtom,
   videoCanvasRefAtom,
   videoSizeAtom,
 } from "./atoms";
-import { v4 as uuid } from "uuid";
-import { makeZIndex } from "./utils";
 
-export function WebcamBlockUI({
-  block,
-  isSelected,
-}: {
-  block: WebcamBlockType;
-  isSelected: boolean;
-}) {
-  const [, setBlockIds] = useAtom(BlockIdsAtom);
-  const [, setBlockMap] = useAtom(BlockMapAtom);
-
-  const size = 24;
+export function WebcamBlockUI() {
+  const [camera] = useAtom(CameraAtom);
 
   return (
-    <>
-      {isSelected && false ? (
-        <div
-          className="absolute left-1/2 -bottom-8 border-2 rounded-2xl border-blue-500 pointer-events-auto bg-black cursor-pointer"
-          style={{
-            marginLeft: -size,
-            width: size * 1.5,
-            height: size,
-          }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            const canvas = document.getElementById(
-              "canvas-" + block.id,
-            ) as HTMLCanvasElement;
-            const dataUrl = canvas.toDataURL();
-            const newId = uuid();
-            const newBlock = {
-              id: newId,
-              x: block.x,
-              y: block.y,
-              width: block.width,
-              height: block.height,
-              rotation: block.rotation,
-              src: dataUrl,
-              type: "image",
-              zIndex: makeZIndex(),
-            } as ImageBlockType;
-            setBlockIds((prev) => [...prev, newId]);
-            setBlockMap((prev) => ({
-              ...prev,
-              [newId]: newBlock,
-              [block.id]: {
-                ...block,
-                x: block.x + 12,
-                y: block.y + 12,
-                zIndex: makeZIndex() + 1,
-              },
-            }));
-          }}
-        ></div>
-      ) : null}
-    </>
+      <div
+        className={`absolute border-2 border-white opacity-50`}
+        style={{
+          inset: -Math.max(8, 8 / camera.z),
+          borderWidth: Math.max(2, 2 / camera.z),
+        }}
+      ></div>
   );
 }
 
