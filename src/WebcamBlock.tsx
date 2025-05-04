@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { ImageBlockType, WebcamBlockType } from "./types";
 import { useAtom } from "jotai";
 import {
+  activeStreamsAtom,
   BlockMapAtom,
   CameraAtom,
   videoCanvasRefAtom,
@@ -12,13 +13,13 @@ export function WebcamBlockUI() {
   const [camera] = useAtom(CameraAtom);
 
   return (
-      <div
-        className={`absolute border-2 border-white opacity-50`}
-        style={{
-          inset: -Math.max(8, 8 / camera.z),
-          borderWidth: Math.max(2, 2 / camera.z),
-        }}
-      ></div>
+    <div
+      className={`absolute border-2 border-white opacity-50`}
+      style={{
+        inset: -Math.max(8, 8 / camera.z),
+        borderWidth: Math.max(2, 2 / camera.z),
+      }}
+    ></div>
   );
 }
 
@@ -28,14 +29,15 @@ export function WebcamBlockRender({
   block: WebcamBlockType;
   isSelected: boolean;
 }) {
-  const [videoCanvasRef] = useAtom(videoCanvasRefAtom);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrame = useRef<number | null>(null);
-  const [videoSize] = useAtom(videoSizeAtom);
   const [, setBlockMap] = useAtom(BlockMapAtom);
+  const [activeStreams] = useAtom(activeStreamsAtom);
+
+  const videoSize = activeStreams[block.src]?.videoSize;
 
   useEffect(() => {
-    if (canvasRef.current) {
+    if (videoSize && canvasRef.current) {
       const targetWidth = block.crop ? block.crop.width : videoSize.width;
       const targetHeight = block.crop ? block.crop.height : videoSize.height;
       canvasRef.current.width = targetWidth;
@@ -61,15 +63,28 @@ export function WebcamBlockRender({
         }));
       }
     }
-  }, [videoSize]);
+  }, [videoSize, block.crop]);
 
   useEffect(() => {
-    if (canvasRef.current) {
+    const videoCanvas = activeStreams[block.src]?.refs.canvas;
+    if (videoCanvas && canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d")!;
       function draw() {
+        if (!videoCanvas) return;
+        if (block.flippedHorizontally || block.flippedVertically) {
+          ctx.save();
+        }
+        if (block.flippedHorizontally) {
+          ctx.scale(-1, 1);
+          ctx.translate(-videoCanvas.width, 0);
+        }
+        if (block.flippedVertically) {
+          ctx.scale(1, -1);
+          ctx.translate(0, -videoCanvas.height);
+        }
         if (block.crop) {
           ctx.drawImage(
-            videoCanvasRef.current,
+            videoCanvas,
             block.crop.x,
             block.crop.y,
             block.crop.width,
@@ -80,7 +95,10 @@ export function WebcamBlockRender({
             block.crop.height,
           );
         } else {
-          ctx.drawImage(videoCanvasRef.current, 0, 0);
+          ctx.drawImage(videoCanvas, 0, 0);
+        }
+        if (block.flippedHorizontally || block.flippedVertically) {
+          ctx.restore();
         }
         animationFrame.current = window.requestAnimationFrame(draw);
       }
@@ -91,7 +109,7 @@ export function WebcamBlockRender({
         window.cancelAnimationFrame(animationFrame.current);
       }
     };
-  }, [canvasRef, videoSize, block.crop]);
+  }, [canvasRef, videoSize, block.crop, block.flippedHorizontally, block.flippedVertically]);
 
   return (
     <div className="absolute pointer-events-none inset-0" draggable={false}>

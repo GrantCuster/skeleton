@@ -21,11 +21,20 @@ export type BaseBlockType = {
   rotation: number;
 };
 
-export type BlendTypes = "normal" | "multiply" | "screen" | "overlay" | "darken" | "lighten";
+export type BlendTypes =
+  | "normal"
+  | "multiply"
+  | "screen"
+  | "overlay"
+  | "darken"
+  | "lighten";
 
 export type ImageBlockType = BaseBlockType & {
   type: "image";
   src: string;
+  crop: CropBoxType;
+  flippedHorizontally: boolean;
+  flippedVertically: boolean;
   blend: BlendTypes;
 };
 
@@ -33,6 +42,10 @@ export type WebcamBlockType = BaseBlockType & {
   type: "webcam";
   crop: CropBoxType;
   blend: BlendTypes;
+  flippedHorizontally: boolean;
+  flippedVertically: boolean;
+  // id that matches camera settings for stream
+  src: string;
 };
 
 export type BlockType = ImageBlockType | WebcamBlockType;
@@ -47,13 +60,14 @@ export type StateRefType = {
   blockSelector: { x: number; y: number; width: number; height: number } | null;
 };
 
-export type CameraSettingsType = {
-  deviceId: string;
-  flipHorizontal: boolean;
-  flipVertical: boolean;
-  videoSize: { width: number; height: number };
-  cropBox: CropBoxType;
-  showCrop: boolean;
+export type ActiveStreamType = {
+  stream: MediaStream | null;
+  videoSize: SizeType | null;
+  refs: {
+    video: HTMLVideoElement | null;
+    canvas: HTMLCanvasElement | null;
+    drawRequest: number | null;
+  };
 };
 
 export type CropBoxType = {
@@ -66,7 +80,7 @@ export type CropBoxType = {
 export type SizeType = {
   width: number;
   height: number;
-}
+};
 
 export type BoxType = {
   x: number;
@@ -84,6 +98,15 @@ export type BlockSelectorType = {
   length: number;
 };
 
-export type StampMoveDirectionType = "←" | "↖" | "↑" | "↗" | "•" | "→" | "↘" | "↓" | "↙";
+export type StampMoveDirectionType =
+  | "←"
+  | "↖"
+  | "↑"
+  | "↗"
+  | "•"
+  | "→"
+  | "↘"
+  | "↓"
+  | "↙";
 
 export type StampMoveOffsetType = "1/4" | "1/2" | "3/4" | "1";

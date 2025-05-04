@@ -98,15 +98,15 @@ export function SingleBlockResizer() {
       let proposedWidth = unrotatedActiveCorner[0] - unrotatedTopLeft[0];
       let proposedHeight = unrotatedActiveCorner[1] - unrotatedTopLeft[1];
 
-      // if (preserveAspectRatio) {
-      //   const aspectRatio = block.width / block.height;
-      //   const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
-      //   if (newAspectRatio < aspectRatio) {
-      //     proposedWidth = proposedHeight * aspectRatio;
-      //   } else {
-      //     proposedHeight = proposedWidth / aspectRatio;
-      //   }
-      // }
+      if (preserveAspectRatio) {
+        const aspectRatio = block.width / block.height;
+        const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
+        if (newAspectRatio < aspectRatio) {
+          proposedWidth = proposedHeight * aspectRatio;
+        } else {
+          proposedHeight = proposedWidth / aspectRatio;
+        }
+      }
 
       const newCenterX = unrotatedTopLeft[0] + proposedWidth / 2;
       const newCenterY = unrotatedTopLeft[1] + proposedHeight / 2;
@@ -154,9 +154,9 @@ export function SingleBlockResizer() {
         const aspectRatio = block.width / block.height;
         const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
         if (newAspectRatio < aspectRatio) {
-          proposedHeight = proposedWidth / aspectRatio;
-        } else {
           proposedWidth = proposedHeight * aspectRatio;
+        } else {
+          proposedHeight = proposedWidth / aspectRatio;
         }
       }
 
@@ -206,9 +206,9 @@ export function SingleBlockResizer() {
         const aspectRatio = block.width / block.height;
         const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
         if (newAspectRatio < aspectRatio) {
-          proposedHeight = proposedWidth / aspectRatio;
-        } else {
           proposedWidth = proposedHeight * aspectRatio;
+        } else {
+          proposedHeight = proposedWidth / aspectRatio;
         }
       }
 
@@ -258,9 +258,9 @@ export function SingleBlockResizer() {
         const aspectRatio = block.width / block.height;
         const newAspectRatio = Math.abs(proposedWidth / proposedHeight);
         if (newAspectRatio < aspectRatio) {
-          proposedHeight = proposedWidth / aspectRatio;
-        } else {
           proposedWidth = proposedHeight * aspectRatio;
+        } else {
+          proposedHeight = proposedWidth / aspectRatio;
         }
       }
 

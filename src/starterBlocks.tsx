@@ -7,6 +7,8 @@ export const starterBlocks = [
     x: -320,
     y: -240,
     zIndex: 156615616,
-    blend: "darken"
+    blend: "darken",
+    flippedHorizontally: false,
+    flippedVertically: false,
   },
 ];

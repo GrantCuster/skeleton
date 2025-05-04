@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import {
+  ActiveStreamType,
   BlockSelectorType,
   BlockType,
   CameraSettingsType,
@@ -48,7 +49,7 @@ export const SelectedBoxAtom = atom<BlockSelectorType | null>((get) => {
       width: block.width,
       height: block.height,
       rotation: block.rotation || 0,
-      length: 1
+      length: 1,
     };
   }
   const selectedBlocks = selectedBlockIds.map((id) => blockMap[id]);
@@ -142,11 +143,10 @@ export const StateRefAtom = atom<StateRefType>({
   blockSelector: null,
 });
 
-export const cameraSettingsAtom = atomWithStorage<
-  Record<string, CameraSettingsType>
->("camera-settings", {});
-
-export const mediaStreamAtom = atom<MediaStream | null>(null);
+// how do we clean up streams? effectively we'll do garbage collection
+export const activeStreamsAtom = atom<Record<string, ActiveStreamType>>(
+  {},
+);
 
 export const videoCanvasRefAtom = atom<{ current: HTMLCanvasElement }>({
   current: document.createElement("canvas"),
@@ -155,8 +155,10 @@ export const videoCanvasRefAtom = atom<{ current: HTMLCanvasElement }>({
 export const isDraggingAtom = atom(false);
 
 // maybe expand to images later
-export const showCropModalAtom = atom<boolean>(false);
+export const showCropModalAtom = atom<string | null>(null);
 
 export const stampMoveDirectionAtom = atom<StampMoveDirectionType>("↓");
 
 export const stampMoveOffsetAtom = atom<StampMoveOffsetType>("1");
+
+export const devicesAtom = atom<MediaDeviceInfo[]>([]);

@@ -1,50 +1,79 @@
-import { useEffect } from "react";
+import { act, useEffect } from "react";
 import { useAtom } from "jotai";
-import { mediaStreamAtom, videoCanvasRefAtom, videoSizeAtom } from "./atoms";
-
-const videoElRef: { current: HTMLVideoElement | null } = { current: null };
-const drawRequestRef: { current: number | null } = { current: null };
+import { activeStreamsAtom, BlockIdsAtom, BlockMapAtom } from "./atoms";
 
 export function useStream() {
-  const [stream] = useAtom(mediaStreamAtom);
-  const [, setSize] = useAtom(videoSizeAtom);
-  const [videoCanvasRef] = useAtom(videoCanvasRefAtom);
+  const [activeStreams, setActiveStreams] = useAtom(activeStreamsAtom);
+  const [blockIds] = useAtom(BlockIdsAtom);
+  const [blockMap] = useAtom(BlockMapAtom);
 
   useEffect(() => {
-    if (stream) {
-      if (!videoElRef.current) {
-        videoElRef.current = document.createElement("video");
-        videoElRef.current.style.position = "absolute";
-        videoElRef.current.style.left = "0";
-        videoElRef.current.style.top = "0";
-        videoElRef.current.style.opacity = "0";
-        videoElRef.current.style.pointerEvents = "none";
-        document.body.appendChild(videoElRef.current);
-      }
-      const videoEl = videoElRef.current;
-      const canvasEl = videoCanvasRef.current;
-      videoEl.autoplay = true;
-      videoEl.playsInline = true;
-      videoEl.muted = true;
-      videoEl.onloadedmetadata = () => {
-        const videoWidth = videoEl.videoWidth;
-        const videoHeight = videoEl.videoHeight;
-        setSize({ width: videoWidth, height: videoHeight });
-        canvasEl.width = videoWidth;
-        canvasEl.height = videoHeight;
-        const ctx = canvasEl.getContext("2d")!;
-        function draw() {
-          ctx.drawImage(videoEl, 0, 0);
-          drawRequestRef.current = window.requestAnimationFrame(draw);
+    const streamKeys = Object.keys(activeStreams);
+    for (const key of streamKeys) {
+      const activeStream = activeStreams[key];
+      if (!activeStream) continue;
+      if (activeStream.stream && !activeStream.refs.video) {
+        activeStream.refs.video = document.createElement("video");
+        activeStream.refs.video.style.position = "absolute";
+        activeStream.refs.video.style.left = "0";
+        activeStream.refs.video.style.top = "0";
+        activeStream.refs.video.style.opacity = "0";
+        activeStream.refs.video.style.pointerEvents = "none";
+        activeStream.refs.video.autoplay = true;
+        activeStream.refs.video.playsInline = true;
+        activeStream.refs.video.muted = true;
+        document.body.appendChild(activeStream.refs.video);
+        if (!activeStream.refs.canvas) {
+          activeStream.refs.canvas = document.createElement("canvas");
         }
-        drawRequestRef.current = window.requestAnimationFrame(draw);
-      };
-      videoEl.srcObject = stream;
-    }
-    return () => {
-      if (drawRequestRef.current !== null) {
-        window.cancelAnimationFrame(drawRequestRef.current);
+        activeStream.refs.video.onloadedmetadata = () => {
+          const videoWidth = activeStream.refs.video!.videoWidth;
+          const videoHeight = activeStream.refs.video!.videoHeight;
+          setActiveStreams((prev) => ({
+            ...prev,
+            [key]: {
+              ...prev[key],
+              videoSize: { width: videoWidth, height: videoHeight },
+            },
+          }));
+          activeStream.refs.canvas!.width = videoWidth;
+          activeStream.refs.canvas!.height = videoHeight;
+          const ctx = activeStream.refs.canvas!.getContext("2d")!;
+          function draw() {
+            ctx.drawImage(activeStream.refs.video!, 0, 0);
+            activeStream.refs.drawRequest = window.requestAnimationFrame(draw);
+          }
+          activeStream.refs.drawRequest = window.requestAnimationFrame(draw);
+        };
+        activeStream.refs.video.srcObject = activeStream.stream;
       }
-    };
-  }, [stream]);
+    }
+  }, [activeStreams]);
+
+
+  useEffect(() => {
+    // cleanup
+    const webcamBlocks = blockIds.map((id) => blockMap[id]).filter((block) => block.type === "webcam");
+    const streamsBeingUsed = new Set(webcamBlocks.map((block) => block.src));
+    const streamKeys = Object.keys(activeStreams);
+    for (const key of streamKeys) {
+      if (!streamsBeingUsed.has(key)) {
+        const activeStream = activeStreams[key];
+        if (activeStream.refs.video) {
+          activeStream.refs.video.remove();
+        }
+        if (activeStream.refs.canvas) {
+          activeStream.refs.canvas.remove();
+        }
+        if (activeStream.refs.drawRequest) {
+          window.cancelAnimationFrame(activeStream.refs.drawRequest);
+        }
+        setActiveStreams((prev) => {
+          const newState = { ...prev };
+          delete newState[key];
+          return newState;
+        });
+      }
+    }
+ }, [blockIds, blockMap]);
 }

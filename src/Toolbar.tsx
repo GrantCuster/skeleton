@@ -5,6 +5,7 @@ import {
   BlockMapAtom,
   CameraAtom,
   SelectedBlockIdsAtom,
+  SelectedBoxAtom,
   showCropModalAtom,
   stampMoveDirectionAtom,
   stampMoveOffsetAtom,
@@ -19,262 +20,59 @@ import {
   ImageBlockType,
   StampMoveDirectionType,
   StampMoveOffsetType,
+  WebcamBlockType,
 } from "./types";
 import { blendOptions, offsetLookup } from "./consts";
+import { ToolCameraSelector } from "./ToolCameraSelector";
+import { ToolBlendSelector } from "./ToolBlendSelector";
+import { ToolFlipper } from "./ToolFlipper";
+import { ToolCrop } from "./ToolCrop";
+import { ToolStamp } from "./ToolStamp";
 
 export function Toolbar() {
   const [blockIds, setBlockIds] = useAtom(BlockIdsAtom);
   const [, setShowCropModal] = useAtom(showCropModalAtom);
   const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
   const [, setCamera] = useAtom(CameraAtom);
+  const [selectedBox] = useAtom(SelectedBoxAtom);
   const [selectedBlockIds, setSelectedBlockIds] = useAtom(SelectedBlockIdsAtom);
   const [stampMoveDirection, setStampMoveDirection] = useAtom(
     stampMoveDirectionAtom,
   );
   const [stampMoveOffset, setStampMoveOffset] = useAtom(stampMoveOffsetAtom);
-  const {
-    devices,
-    selectedDeviceIndex,
-    setSelectedDeviceIndex,
-    selectedDeviceLabel,
-    cameraSettings,
-    setCameraSettings,
-  } = useDevices();
   useStream();
 
-  // useEffect(() => {
-  //   function handleModifierDown(event: KeyboardEvent) {}
-  //   function handleModifierUp(event: KeyboardEvent) {}
-  //   window.addEventListener("keydown", handleModifierDown);
-  //   window.addEventListener("keyup", handleModifierUp);
-  //   return () => {
-  //     window.removeEventListener("keydown", handleModifierDown);
-  //     window.removeEventListener("keyup", handleModifierUp);
-  //   };
-  // }, [mode, setMode]);
+  const selectedBlocks = useMemo(() => {
+    return selectedBlockIds.map((id) => blockMap[id]);
+  }, [blockMap, selectedBlockIds]);
 
-  const cameraBlockId = useMemo(() => {
-    return blockIds.find((id: string) => {
-      const block = blockMap[id];
-      return block.type === "webcam" ? block : null;
-    });
-  }, [blockIds, blockMap]);
+  const selectedWebcamBlocks = selectedBlocks.filter(
+    (block) => block.type === "webcam",
+  );
 
-  const cameraBlockSelected = useMemo(() => {
-    return selectedBlockIds.some((id) => {
-      const block = blockMap[id];
-      return block.type === "webcam" ? block : null;
-    });
-  }, [selectedBlockIds, blockMap]);
-  const selectedBlock =
-    selectedBlockIds.length === 1 ? blockMap[selectedBlockIds[0]] : null;
+  const selectedImageBlocks = selectedBlocks.filter(
+    (block) => block.type === "image",
+  );
+
+  const blocksAreSelected = selectedBlockIds.length > 0;
+  const singleBlockSelected = selectedBlockIds.length === 1;
+  const multipleBlocksSelected = selectedBlockIds.length > 1;
+  const webcamIsSelected = selectedWebcamBlocks.length > 0;
 
   return (
     <>
       <div className="absolute left-0 bottom-0 w-full">
-        <div className="flex flex-wrap">
-          {cameraBlockSelected ? (
-            <>
-              {devices.length > 0 ? (
-                devices.length > 1 ? (
-                  <select
-                    value={selectedDeviceIndex || ""}
-                    onChange={(e) =>
-                      setSelectedDeviceIndex(Number(e.target.value))
-                    }
-                    className="px-3 pointer-events-auto py-2 bg-neutral-800 focus:outline-none"
-                  >
-                    {devices.map((device, index) => (
-                      <option
-                        value={index}
-                        key={device.deviceId}
-                        className="px-3 py-2 bg-neutral-800"
-                      >
-                        {device.label || `Camera $ {device.deviceId}`}
-                      </option>
-                    ))}
-                  </select>
-                ) : null
-              ) : null}
-              <div className="flex flex-col">
-                {blendOptions.map((item) => (
-                  <button
-                    key={item}
-                    className={`px-3 ${item === blockMap[cameraBlockId!].blend ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setBlockMap((prev) => {
-                        const block = prev[cameraBlockId!];
-                        return {
-                          ...prev,
-                          [cameraBlockId!]: {
-                            ...block,
-                            blend: item as BlendTypes,
-                          },
-                        };
-                      });
-                    }}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-              <button
-                className="px-3 py-2 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
-                onClick={() => {
-                  if (selectedDeviceLabel) {
-                    setCameraSettings((prev) => ({
-                      ...prev,
-                      [selectedDeviceLabel]: {
-                        ...prev[selectedDeviceLabel],
-                        flipHorizontal: !cameraSettings.flipHorizontal,
-                      },
-                    }));
-                  }
-                }}
-              >
-                <FlipHorizontal2 size={14} />
-              </button>
-              <button
-                className="px-3 py-2 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
-                onClick={() => {
-                  if (selectedDeviceLabel) {
-                    setCameraSettings((prev) => ({
-                      ...prev,
-                      [selectedDeviceLabel]: {
-                        ...prev[selectedDeviceLabel],
-                        flipVertical: !cameraSettings.flipVertical,
-                      },
-                    }));
-                  }
-                }}
-              >
-                <FlipVertical2 size={14} />
-              </button>
-              <button
-                className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700"
-                onClick={() => setShowCropModal(true)}
-              >
-                crop
-              </button>
-              <div className="grid grid-cols-3">
-                {["↖", "↑", "↗", "←", "•", "→", "↙", "↓", "↘"].map(
-                  (value) => (
-                    <button
-                      className={`px-2 ${stampMoveDirection === value
-                          ? "bg-neutral-700"
-                          : "bg-neutral-800"
-                        } hover:bg-neutral-700 flex justify-center items-center`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setStampMoveDirection(value as StampMoveDirectionType);
-                      }}
-                    >
-                      {value}
-                    </button>
-                  ),
-                )}
-              </div>
-              <div className="flex flex-col">
-                {["1/4", "1/2", "3/4", "1"].map((offset) => {
-                  return (
-                    <button
-                      className={`px-3 ${stampMoveOffset === offset
-                          ? "bg-neutral-700"
-                          : "bg-neutral-800"
-                        } hover:bg-neutral-700 flex justify-center items-center`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setStampMoveOffset(offset as StampMoveOffsetType);
-                      }}
-                      value={offset}
-                    >
-                      {offset}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                className="px-3 py-2 pointer-events-auto bg-neutral-800 hover:bg-neutral-700 flex justify-center items-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!cameraBlockId) return;
-
-                  let horizontalMove = 0;
-                  let verticalMove = 0;
-                  if (
-                    stampMoveDirection === "←" ||
-                    stampMoveDirection === "↖" ||
-                    stampMoveDirection === "↙"
-                  ) {
-                    horizontalMove = -1 * offsetLookup[stampMoveOffset];
-                  }
-                  if (
-                    stampMoveDirection === "→" ||
-                    stampMoveDirection === "↗" ||
-                    stampMoveDirection === "↘"
-                  ) {
-                    horizontalMove = 1 * offsetLookup[stampMoveOffset];
-                  }
-                  if (
-                    stampMoveDirection === "↑" ||
-                    stampMoveDirection === "↖" ||
-                    stampMoveDirection === "↗"
-                  ) {
-                    verticalMove = -1 * offsetLookup[stampMoveOffset];
-                  }
-                  if (
-                    stampMoveDirection === "↓" ||
-                    stampMoveDirection === "↙" ||
-                    stampMoveDirection === "↘"
-                  ) {
-                    verticalMove = 1 * offsetLookup[stampMoveOffset];
-                  }
-                  if (stampMoveDirection === "•") {
-                    horizontalMove = 0;
-                    verticalMove = 0;
-                  }
-                  const block = blockMap[cameraBlockId];
-                  const canvas = document.getElementById(
-                    "canvas-" + block.id,
-                  ) as HTMLCanvasElement;
-                  const dataUrl = canvas.toDataURL();
-                  const newId = uuid();
-                  const newBlock = {
-                    id: newId,
-                    x: block.x,
-                    y: block.y,
-                    width: block.width,
-                    height: block.height,
-                    rotation: block.rotation,
-                    src: dataUrl,
-                    blend: block.blend,
-                    type: "image",
-                    zIndex: makeZIndex(),
-                  } as ImageBlockType;
-                  setBlockIds((prev) => [...prev, newId]);
-                  setBlockMap((prev) => ({
-                    ...prev,
-                    [newId]: newBlock,
-                    [block.id]: {
-                      ...block,
-                      x: block.x + block.width * horizontalMove,
-                      y: block.y + block.height * verticalMove,
-                      zIndex: makeZIndex() + 1,
-                    },
-                  }));
-                  setCamera((prev) => {
-                    return {
-                      ...prev,
-                      x: prev.x - block.width * horizontalMove,
-                      y: prev.y - block.height * verticalMove,
-                    };
-                  });
-                }}
-              >
-                stamp
-              </button>
-            </>
+        <div className="flex flex-wrap items-end">
+          {webcamIsSelected && (
+            <ToolCameraSelector webcamBlocks={selectedWebcamBlocks} />
+          )}
+          {blocksAreSelected ? (
+            <ToolBlendSelector blocks={selectedBlocks} />
+          ) : null}
+          {blocksAreSelected ? <ToolFlipper blocks={selectedBlocks} /> : null}
+          {singleBlockSelected ? <ToolCrop block={selectedBlocks[0]} /> : null}
+          {webcamIsSelected ? (
+            <ToolStamp blocks={selectedWebcamBlocks} />
           ) : null}
         </div>
         <div className="flex flex-wrap">
@@ -283,11 +81,10 @@ export function Toolbar() {
           ) : (
             <div className="px-3 py-2">{`0 selected`}</div>
           )}
-          {selectedBlock ? (
+          {selectedBox ? (
             <div className="px-3 py-2">
-              {Math.round(selectedBlock.x)}, {Math.round(selectedBlock.y)}{" "}
-              {Math.round(selectedBlock.width)}x
-              {Math.round(selectedBlock.height)}
+              {Math.round(selectedBox.x)}, {Math.round(selectedBox.y)}{" "}
+              {Math.round(selectedBox.width)}x{Math.round(selectedBox.height)}
             </div>
           ) : null}
         </div>
