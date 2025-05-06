@@ -1,8 +1,5 @@
 import { useAtom } from "jotai";
-import {
-  CameraAtom,
-  SelectedBoxAtom,
-} from "./atoms";
+import { CameraAtom, SelectedBoxAtom } from "./atoms";
 import { BlockType } from "./types";
 import { SingleBlockResizer } from "./SingleBlockResizer";
 import { MultipleBlockResizer } from "./MultipleBlockResizer";
@@ -12,20 +9,52 @@ import { MultipleBlockRotator } from "./MultipleBlockRotator";
 export function BlockSelected() {
   const [blockSelector] = useAtom(SelectedBoxAtom);
   const [camera] = useAtom(CameraAtom);
+  const resizerSize = 16 / camera.z;
 
   return blockSelector ? (
     <>
       <div
-        className="absolute pointer-events-none border-[2px] border-blue-500"
+        className="absolute pointer-events-none"
         style={{
           left: blockSelector.x,
           top: blockSelector.y,
           width: blockSelector.width,
           height: blockSelector.height,
           transform: `rotate(${blockSelector.rotation}rad)`,
-          borderWidth: Math.max(2, 2 / camera.z),
         }}
       >
+        <div
+          className="absolute left-0 bg-blue-500"
+          style={{
+            width: Math.max(2, 2 / camera.z),
+            top: resizerSize/2,
+            height: blockSelector.height - resizerSize,
+          }}
+        ></div>
+        <div
+          className="absolute top-0 bg-blue-500"
+          style={{
+            height: Math.max(2, 2 / camera.z),
+            left: resizerSize/2,
+            width: blockSelector.width - resizerSize,
+          }}
+        ></div>
+        <div
+          className="absolute right-0 bg-blue-500"
+          style={{
+            width: Math.max(2, 2 / camera.z),
+            top: resizerSize/2,
+            height: blockSelector.height - resizerSize,
+          }}
+        ></div>
+        <div
+          className="absolute bottom-0 bg-blue-500"
+          style={{
+            height: Math.max(2, 2 / camera.z),
+            left: resizerSize/2,
+            width: blockSelector.width - resizerSize,
+          }}
+        ></div>
         {blockSelector.length === 1 ? (
           <>
             <SingleBlockResizer />
@@ -41,5 +70,3 @@ export function BlockSelected() {
     </>
   ) : null;
 }
-
-

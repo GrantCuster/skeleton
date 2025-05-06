@@ -126,8 +126,9 @@ export function MultipleBlockResizer({
             {...dragBind()}
             key={corner}
             data-corner={corner}
-            className="absolute touch-none pointer-events-auto"
+            className="absolute border-blue-500 touch-none pointer-events-auto"
             style={{
+              borderWidth: Math.max(2, 2 / camera.z),
               left:
                 corner === "top-left" || corner === "bottom-left"
                   ? -scaledSize / 2

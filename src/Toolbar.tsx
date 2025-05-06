@@ -12,7 +12,6 @@ import {
 } from "./atoms";
 import { useDevices } from "./useDevices";
 import { useStream } from "./useStream";
-import { FlipHorizontal2, FlipVertical2 } from "lucide-react";
 import { v4 as uuid } from "uuid";
 import { makeZIndex } from "./utils";
 import {
@@ -28,6 +27,7 @@ import { ToolBlendSelector } from "./ToolBlendSelector";
 import { ToolFlipper } from "./ToolFlipper";
 import { ToolCrop } from "./ToolCrop";
 import { ToolStamp } from "./ToolStamp";
+import { ToolDownload } from "./ToolDownload";
 
 export function Toolbar() {
   const [blockIds, setBlockIds] = useAtom(BlockIdsAtom);
@@ -61,8 +61,8 @@ export function Toolbar() {
 
   return (
     <>
-      <div className="absolute left-0 bottom-0 w-full">
-        <div className="flex flex-wrap items-end">
+      <div className="absolute right-0 top-0">
+        <div className="flex flex-col gap-2 items-end">
           {webcamIsSelected && (
             <ToolCameraSelector webcamBlocks={selectedWebcamBlocks} />
           )}
@@ -75,18 +75,19 @@ export function Toolbar() {
             <ToolStamp blocks={selectedWebcamBlocks} />
           ) : null}
         </div>
-        <div className="flex flex-wrap">
-          {selectedBlockIds.length > 0 ? (
-            <div className="px-3 py-2">{`${selectedBlockIds.length} selected`}</div>
-          ) : (
-            <div className="px-3 py-2">{`0 selected`}</div>
-          )}
-          {selectedBox ? (
-            <div className="px-3 py-2">
-              {Math.round(selectedBox.x)}, {Math.round(selectedBox.y)}{" "}
-              {Math.round(selectedBox.width)}x{Math.round(selectedBox.height)}
-            </div>
-          ) : null}
+      </div>
+      <div className="absolute left-0 bottom-0 w-full">
+        <div className="flex justify-between">
+          <div className="flex flex-wrap">
+            {selectedBlockIds.length > 0 ? (
+              <div className="px-3 py-2">{`${selectedBlockIds.length} selected`}</div>
+            ) : (
+              <div className="px-3 py-2">{`0 selected`}</div>
+            )}
+          </div>
+          <div>
+            <ToolDownload />
+          </div>
         </div>
       </div>
     </>

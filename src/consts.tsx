@@ -24,6 +24,7 @@ export const blendOptions = [
 ];
 
 export const offsetLookup = {
+  "1/8": 0.125,
   "1/4": 0.25,
   "1/2": 0.5,
   "3/4": 0.75,

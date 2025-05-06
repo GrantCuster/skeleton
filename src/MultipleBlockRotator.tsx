@@ -20,13 +20,7 @@ export function MultipleBlockRotator({
   const [blockMap, setBlockMap] = useAtom(BlockMapAtom);
   const offset = 16;
   const size = 16;
-  const corners = [
-    "top-left",
-    "top-right",
-    "bottom-left",
-    "bottom-right",
-  ] as const;
-  const [stateRef] = useAtom(StateRefAtom);
+ const [stateRef] = useAtom(StateRefAtom);
   const [camera] = useAtom(CameraAtom);
 
   const startCenterRef = useRef({ x: 0, y: 0 });
@@ -98,41 +92,21 @@ export function MultipleBlockRotator({
     setBlockMap(newBlockMap);
   });
 
-  const cornerCursors = {
-    "top-left": "nesw-resize",
-    "top-right": "nwse-resize",
-    "bottom-left": "nwse-resize",
-    "bottom-right": "nesw-resize",
-  };
-
-  const scaledSize = size / camera.z;
-  const scaledOffset = offset / camera.z;
+ const scaledSize = Math.max(8, size / camera.z);
+  const scaledOffset = Math.max(offset, offset / camera.z)
 
   return (
-    <>
-      {[...corners].map((corner) => {
-        return (
-          <div
-            {...dragBind()}
-            key={corner}
-            data-corner={corner}
-            className="absolute touch-none pointer-events-auto"
-            style={{
-              left:
-                corner === "top-left" || corner === "bottom-left"
-                  ? -scaledOffset - scaledSize / 2
-                  : blockSelector.width - scaledSize / 2 + scaledOffset,
-              top:
-                corner === "top-left" || corner === "top-right"
-                  ? -scaledSize / 2 - scaledOffset
-                  : blockSelector.height - scaledSize / 2 + scaledOffset,
-              cursor: cornerCursors[corner],
-              width: scaledSize,
-              height: scaledSize,
-            }}
-          />
-        );
-      })}
-    </>
+    <div
+      {...dragBind()}
+      className="absolute border-blue-500 rounded-full touch-none pointer-events-auto"
+      style={{
+        borderWidth: Math.max(2, 2 / camera.z),
+        left: blockSelector.width / 2 - scaledSize / 2,
+        top: -scaledSize / 2 - scaledOffset,
+        cursor: "grab",
+        width: scaledSize,
+        height: scaledSize,
+      }}
+    />
   );
 }

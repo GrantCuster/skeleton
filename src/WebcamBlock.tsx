@@ -1,20 +1,14 @@
 import { useEffect, useRef } from "react";
-import { ImageBlockType, WebcamBlockType } from "./types";
+import { WebcamBlockType } from "./types";
 import { useAtom } from "jotai";
-import {
-  activeStreamsAtom,
-  BlockMapAtom,
-  CameraAtom,
-  videoCanvasRefAtom,
-  videoSizeAtom,
-} from "./atoms";
+import { activeStreamsAtom, BlockMapAtom, CameraAtom } from "./atoms";
 
 export function WebcamBlockUI() {
   const [camera] = useAtom(CameraAtom);
 
   return (
     <div
-      className={`absolute border-2 border-white opacity-50`}
+      className={`absolute border-2 border-dashed border-white opacity-50`}
       style={{
         inset: -Math.max(8, 8 / camera.z),
         borderWidth: Math.max(2, 2 / camera.z),
@@ -109,7 +103,13 @@ export function WebcamBlockRender({
         window.cancelAnimationFrame(animationFrame.current);
       }
     };
-  }, [canvasRef, videoSize, block.crop, block.flippedHorizontally, block.flippedVertically]);
+  }, [
+    canvasRef,
+    videoSize,
+    block.crop,
+    block.flippedHorizontally,
+    block.flippedVertically,
+  ]);
 
   return (
     <div className="absolute pointer-events-none inset-0" draggable={false}>

@@ -21,7 +21,7 @@ export function ToolFlipper({ blocks }: { blocks: BlockType[] }) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex">
       <button
         className={`px-3 py-2 text-left ${horizontalState === "true" ? "bg-neutral-700" : "bg-neutral-800"} hover:bg-neutral-700`}
         onClick={() => {

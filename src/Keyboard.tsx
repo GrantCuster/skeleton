@@ -31,6 +31,7 @@ export function Keyboard() {
   }
 
   function handleDuplicateBlocks() {
+    // update to behave like stamp
     const newBlockMap = { ...stateRef.blockMap };
     const newBlockIds = [...stateRef.blockIds];
     let newSelectedBlockIds: string[] = []
@@ -53,6 +54,11 @@ export function Keyboard() {
     setSelectedBlockIds(newSelectedBlockIds);
   }
 
+  function handleSelectAllBlocks() {
+    const allBlockIds = Object.keys(stateRef.blockMap);
+    setSelectedBlockIds(allBlockIds);
+  }
+
   useEffect(() => {
     let isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
     function handleKeyDown(event: KeyboardEvent) {
@@ -70,6 +76,10 @@ export function Keyboard() {
       if (isCmdOrCtrl && event.key === "d") {
         event.preventDefault();
         handleDuplicateBlocks();
+      }
+      if (isCmdOrCtrl && event.key === "a") {
+        event.preventDefault();
+        handleSelectAllBlocks();
       }
     }
     window.addEventListener("keydown", handleKeyDown);
