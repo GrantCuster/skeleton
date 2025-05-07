@@ -80,7 +80,17 @@ export function Toolbar() {
         <div className="flex justify-between">
           <div className="flex flex-wrap">
             {selectedBlockIds.length > 0 ? (
-              <div className="px-3 py-2">{`${selectedBlockIds.length} selected`}</div>
+              <>
+                <div className="px-3 py-2">{`${selectedBlockIds.length} selected`}</div>
+                {selectedBox ? (
+                  <div className="px-3 py-2">
+                    {Math.round(selectedBox.x)}, {Math.round(selectedBox.y)}
+                    {" "}
+                    {Math.round(selectedBox.width)}x
+                    {Math.round(selectedBox.height)}
+                  </div>
+                ) : null}
+              </>
             ) : (
               <div className="px-3 py-2">{`0 selected`}</div>
             )}

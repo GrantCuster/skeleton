@@ -23,6 +23,7 @@ export function ToolDownload() {
               ...block,
             };
           });
+
           currentBlocks.sort((a, b) => {
             if (a.zIndex > b.zIndex) {
               return 1;
@@ -31,42 +32,84 @@ export function ToolDownload() {
             }
             return 0;
           });
-          let minX = Infinity;
-          let minY = Infinity;
-          let maxX = -Infinity;
-          let maxY = -Infinity;
-          currentBlocks.forEach((block) => {
-            if (block.x < minX) {
-              minX = block.x;
-            }
-            if (block.y < minY) {
-              minY = block.y;
-            }
-            if (block.x + block.width > maxX) {
-              maxX = block.x + block.width;
-            }
-            if (block.y + block.height > maxY) {
-              maxY = block.y + block.height;
-            }
+
+          const rotatedBlocks = currentBlocks.map((block) => {
+            const centerX = block.x + block.width / 2;
+            const centerY = block.y + block.height / 2;
+            const rotation = block.rotation || 0;
+            const cosine = Math.cos(rotation);
+            const sine = Math.sin(rotation);
+            const rotatedTopLeftX =
+              centerX - (block.width / 2) * cosine + (block.height / 2) * sine;
+            const rotatedTopLeftY =
+              centerY - (block.width / 2) * sine - (block.height / 2) * cosine;
+            const rotatedTopRightX =
+              centerX + (block.width / 2) * cosine + (block.height / 2) * sine;
+            const rotatedTopRightY =
+              centerY + (block.width / 2) * sine - (block.height / 2) * cosine;
+            const rotatedBottomLeftX =
+              centerX - (block.width / 2) * cosine - (block.height / 2) * sine;
+            const rotatedBottomLeftY =
+              centerY - (block.width / 2) * sine + (block.height / 2) * cosine;
+            const rotatedBottomRightX =
+              centerX + (block.width / 2) * cosine - (block.height / 2) * sine;
+            const rotatedBottomRightY =
+              centerY + (block.width / 2) * sine + (block.height / 2) * cosine;
+            const minX = Math.min(
+              rotatedTopLeftX,
+              rotatedTopRightX,
+              rotatedBottomLeftX,
+              rotatedBottomRightX,
+            );
+            const minY = Math.min(
+              rotatedTopLeftY,
+              rotatedTopRightY,
+              rotatedBottomLeftY,
+              rotatedBottomRightY,
+            );
+            const maxX = Math.max(
+              rotatedTopLeftX,
+              rotatedTopRightX,
+              rotatedBottomLeftX,
+              rotatedBottomRightX,
+            );
+            const maxY = Math.max(
+              rotatedTopLeftY,
+              rotatedTopRightY,
+              rotatedBottomLeftY,
+              rotatedBottomRightY,
+            );
+            return {
+              minX,
+              minY,
+              maxX,
+              maxY,
+            };
           });
+          const minXs = rotatedBlocks.map((block) => block.minX);
+          const minYs = rotatedBlocks.map((block) => block.minY);
+          const maxXs = rotatedBlocks.map((block) => block.maxX);
+          const maxYs = rotatedBlocks.map((block) => block.maxY);
+          const minX = Math.min(...minXs);
+          const minY = Math.min(...minYs);
+          const maxX = Math.max(...maxXs);
+          const maxY = Math.max(...maxYs);
           const proposedWidth = maxX - minX;
           const proposedHeight = maxY - minY;
           let width = proposedWidth;
           let height = proposedHeight;
-          let scale = 1;
+
           const maxSize = 4096;
-
+          let scale = 1;
           const aspectRatio = proposedWidth / proposedHeight;
-
           if (proposedWidth > maxSize || proposedHeight > maxSize) {
             if (aspectRatio > 1) {
-              width = maxSize;
-              height = maxSize / aspectRatio;
+              scale = maxSize / proposedWidth;
             } else {
-              width = maxSize * aspectRatio;
-              height = maxSize;
+              scale = maxSize / proposedHeight;
             }
-            scale = Math.min(maxSize / proposedWidth, maxSize / proposedHeight);
+            width = Math.floor(proposedWidth * scale);
+            height = Math.floor(proposedHeight * scale);
           }
 
           bufferCanvasRef.current.width = width;
@@ -81,25 +124,32 @@ export function ToolDownload() {
             ctx.save();
             ctx.globalCompositeOperation =
               block.blend === "normal" ? "source-over" : block.blend;
+            if (block.rotation) {
+              const centerX = (block.x + block.width / 2 - minX) * scale;
+              const centerY = (block.y + block.height / 2 - minY) * scale;
+              ctx.translate(centerX, centerY);
+              ctx.rotate(block.rotation || 0);
+              ctx.translate(-centerX, -centerY);
+            }
             if (block.type === "image" && !block.crop) {
               ctx.drawImage(
                 document.getElementById(
                   "image-" + block.id,
                 ) as HTMLImageElement,
-                block.x - minX,
-                block.y - minY,
-                block.width,
-                block.height,
+                (block.x - minX) * scale,
+                (block.y - minY) * scale,
+                block.width * scale,
+                block.height * scale,
               );
             } else {
               ctx.drawImage(
                 document.getElementById(
                   "canvas-" + block.id,
                 ) as HTMLCanvasElement,
-                block.x - minX,
-                block.y - minY,
-                block.width,
-                block.height,
+                (block.x - minX) * scale,
+                (block.y - minY) * scale,
+                block.width * scale,
+                block.height * scale,
               );
             }
             ctx.restore();
@@ -119,7 +169,7 @@ export function ToolDownload() {
             height,
           );
 
-          const dataUrl = bufferCanvasRef.current.toDataURL("image/jpg");
+          const dataUrl = finalCanvasRef.current.toDataURL("image/jpg");
           const a = document.createElement("a");
           a.href = dataUrl;
           const timestamp = new Date().toISOString().replace(/:/g, "-");

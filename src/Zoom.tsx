@@ -6,7 +6,7 @@ import {
   ZoomContainerAtom,
 } from "./atoms";
 import { Blocks } from "./Blocks";
-import { useHandleDropImage, useHandlePasteImage } from "./hooks";
+// import { useHandleDropImage, useHandlePasteImage } from "./hooks";
 import { panCamera, zoomCamera } from "./Camera";
 import { useDragAndSelect } from "./useDragAndSelect";
 import { BlockSelected } from "./BlockSelected";
@@ -14,8 +14,8 @@ import { BlockSelected } from "./BlockSelected";
 export function Zoom() {
   const [camera, setCamera] = useAtom(CameraAtom);
   const [zoomContainer, setZoomContainer] = useAtom(ZoomContainerAtom);
-  useHandleDropImage();
-  useHandlePasteImage();
+  // useHandleDropImage();
+  // useHandlePasteImage();
   const useDragBind = useDragAndSelect();
 
   useEffect(() => {

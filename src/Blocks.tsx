@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { BlockIdsAtom, BlockMapAtom, SelectedBlockIdsAtom } from "./atoms";
+import { BlockIdsAtom, BlockMapAtom, CameraAtom, SelectedBlockIdsAtom } from "./atoms";
 import { ImageBlockType, WebcamBlockType } from "./types";
 import { ImageBlock } from "./ImageBlock";
 import { WebcamBlockRender, WebcamBlockUI } from "./WebcamBlock";
@@ -29,12 +29,13 @@ export function BlockUI({ id }: { id: string }) {
   const [blockMap] = useAtom(BlockMapAtom);
   const block = blockMap[id];
   const [selectedBlockIds] = useAtom(SelectedBlockIdsAtom);
+  const [camera] = useAtom(CameraAtom);
   const isSelected = selectedBlockIds.includes(id);
 
   return (
     <>
       <div
-        className={`absolute touch-none pointer-events-auto`}
+        className={`absolute touch-none select-none`}
         style={{
           left: block.x,
           top: block.y,
@@ -44,8 +45,15 @@ export function BlockUI({ id }: { id: string }) {
           transform: `rotate(${block.rotation}rad)`,
         }}
       >
+        {isSelected && (
+          <div className="absolute inset-0 border-blue-500" 
+            style={{
+              borderWidth: Math.max(2, 2 / camera.z),
+            }}
+
+          />
+        )}
         <BlockUIFactory id={id} isSelected={isSelected} />
-        {isSelected ? <BlockRotators id={id} /> : null}
       </div>
     </>
   );
@@ -114,4 +122,4 @@ export function BlockRenderFactory({
   }
 }
 
-export function RenderLayer() { }
+export function RenderLayer() {}

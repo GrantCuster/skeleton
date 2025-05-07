@@ -58,6 +58,7 @@ export type StateRefType = {
   zoomContainer: HTMLDivElement | null;
   selectedBlockIds: string[];
   blockSelector: { x: number; y: number; width: number; height: number } | null;
+  selectedBox: BoxType | null;
 };
 
 export type ActiveStreamType = {
